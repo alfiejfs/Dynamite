@@ -1,7 +1,7 @@
 import random
 
 
-class PaperBot:
+class AlfieBot:
     max_rounds = 2500
     max_points = 1000
     max_dynamite = 100
@@ -10,23 +10,23 @@ class PaperBot:
     self_dynamite_heuristic = 0.7 # spread out self dynamite
 
     def __init__(self):
-        self.dynamite = PaperBot.max_dynamite
+        self.dynamite = AlfieBot.max_dynamite
 
     def make_move(self, gamestate):
         rounds_passed = self.get_number_rounds(gamestate)
 
         opponent_dynamite_used = self.calculate_opponent_dynamite(gamestate)
-        opponent_dynamite_left = PaperBot.max_dynamite - opponent_dynamite_used
+        opponent_dynamite_left = AlfieBot.max_dynamite - opponent_dynamite_used
 
         self_points = self.get_self_points(gamestate)
         opponent_points = self.get_opponent_points(gamestate)
 
-        max_rounds_remaining = PaperBot.max_rounds - self.get_number_rounds(gamestate)
+        max_rounds_remaining = AlfieBot.max_rounds - self.get_number_rounds(gamestate)
         min_rounds_remaining = self.get_minimum_rounds_left(gamestate)
 
         dynamite_chance_opponent = (opponent_dynamite_left / min_rounds_remaining) \
-                                    * PaperBot.opponent_dynamite_heuristic
-        dynamite_chance_self = (self.dynamite / min_rounds_remaining) * PaperBot.self_dynamite_heuristic
+                                    * AlfieBot.opponent_dynamite_heuristic
+        dynamite_chance_self = (self.dynamite / min_rounds_remaining) * AlfieBot.self_dynamite_heuristic
 
         random_value = random.random()
 
@@ -35,7 +35,7 @@ class PaperBot:
         elif min_rounds_remaining <= opponent_dynamite_left:
             return 'W' # Stop them!
 
-        if random_value < dynamite_chance_opponent * PaperBot.opponent_dynamite_heuristic:
+        if random_value < dynamite_chance_opponent * AlfieBot.opponent_dynamite_heuristic:
             return 'W'
         elif random_value < dynamite_chance_opponent + dynamite_chance_self and self.dynamite > 0:
             self.dynamite -= 1
@@ -117,7 +117,7 @@ class PaperBot:
             else:
                 break
 
-        return max(1, PaperBot.max_points - additional_points - max(p1_points, p2_points))
+        return max(1, AlfieBot.max_points - additional_points - max(p1_points, p2_points))
 
     def random_rps(self):
         return random.choice(['R', 'P', 'S'])
