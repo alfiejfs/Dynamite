@@ -6,8 +6,8 @@ class AlfieBot:
     max_points = 1000
     max_dynamite = 100
 
-    opponent_dynamite_heuristic = 1.1
-    self_dynamite_heuristic = 0.7 # spread out self dynamite
+    opponent_dynamite_heuristic = 0.7
+    self_dynamite_heuristic = 1.3  # spread out self dynamite
 
     def __init__(self):
         self.dynamite = AlfieBot.max_dynamite
@@ -25,17 +25,20 @@ class AlfieBot:
         min_rounds_remaining = self.get_minimum_rounds_left(gamestate)
 
         dynamite_chance_opponent = (opponent_dynamite_left / min_rounds_remaining) \
-                                    * AlfieBot.opponent_dynamite_heuristic
+                                   * AlfieBot.opponent_dynamite_heuristic
         dynamite_chance_self = (self.dynamite / min_rounds_remaining) * AlfieBot.self_dynamite_heuristic
 
-        random_value = random.random()
+        additional_points = self.calculate_additional_point_stack(gamestate)
+        additional_point_heuristic = self.get_additional_heuristic(additional_points)
+
+        random_value = random.random() * additional_point_heuristic
 
         if min_rounds_remaining <= self.dynamite:
-            return 'D' # Use them!
+            return 'D'  # Use them!
         elif min_rounds_remaining <= opponent_dynamite_left:
-            return 'W' # Stop them!
+            return 'W'  # Stop them!
 
-        if random_value < dynamite_chance_opponent * AlfieBot.opponent_dynamite_heuristic:
+        if random_value < dynamite_chance_opponent:
             return 'W'
         elif random_value < dynamite_chance_opponent + dynamite_chance_self and self.dynamite > 0:
             self.dynamite -= 1
@@ -104,20 +107,31 @@ class AlfieBot:
                 count += 1
         return count
 
-    def get_minimum_rounds_left(self, gamestate):
-        p1_points = self.get_self_points(gamestate)
-        p2_points = self.get_opponent_points(gamestate)
-
-        rounds = gamestate['rounds']
-
+    def calculate_additional_point_stack(self, gamestate):
         additional_points = 0
+        rounds = gamestate['rounds']
         for i in range(len(rounds) - 1, 0, -1):
             if self.get_winner(rounds[i]) is None:
                 additional_points += 1
             else:
                 break
+        return additional_points
 
+    def get_minimum_rounds_left(self, gamestate):
+        p1_points = self.get_self_points(gamestate)
+        p2_points = self.get_opponent_points(gamestate)
+        additional_points = self.calculate_additional_point_stack(gamestate)
         return max(1, AlfieBot.max_points - additional_points - max(p1_points, p2_points))
+
+    def get_additional_heuristic(self, points):
+        if points == 0:
+            return 1
+        elif points == 1:
+            return 1.2
+        elif points == 2:
+            return 1.5
+        else:
+            return 100
 
     def random_rps(self):
         return random.choice(['R', 'P', 'S'])
